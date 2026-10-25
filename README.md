@@ -174,7 +174,9 @@ The repository ships a Render Blueprint ([render.yaml](render.yaml)) that provis
 
 **Manual:** Render Dashboard → **New → Blueprint** → connect `opzain/Codex_SyedZainuddin` → **Apply**. Every push to `main` redeploys automatically.
 
-**API:** set `RENDER_API_KEY` (Render → Account Settings → API Keys), then create the static site against `https://api.render.com/v1/services`. The first deploy typically finishes in under two minutes; the public URL looks like `https://cyberser-command-center.onrender.com`.
+**API:** set `RENDER_API_KEY` (Render → Account Settings → API Keys), then run `./scripts/deploy-render.ps1 -ApiKey rnd_...`. The script creates a `static_site`, forces the publish path to `./dist` (the REST field is `publishPath`, not the Blueprint's `staticPublishPath`), waits for the deploy to go live, and prints the URL. The Blueprint additionally installs the SPA rewrite and asset-cache headers.
+
+Live instance: <https://cyberser-command-center.onrender.com>
 
 
 ## 📁 Project Structure

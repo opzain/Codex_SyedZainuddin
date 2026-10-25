@@ -49,21 +49,30 @@ if ($existing) {
 } else {
   Write-Host "3/4  Creating static site..." -ForegroundColor Cyan
   $payload = @{
-    type           = "static"
+    type           = "static_site"
     name           = $ServiceName
     ownerId        = $ownerId
     repo           = $Repo
     branch         = $Branch
     autoDeploy     = "yes"
     serviceDetails = @{
+      # Render's REST API calls this `publishPath` (the Blueprint key is `staticPublishPath`).
       buildCommand      = "npm ci && npm run build"
-      staticPublishPath = "./dist"
+      publishPath       = "./dist"
+      pullRequestPreviewsEnabled = "no"
     }
   }
   $created = Invoke-Render POST "/services" $payload
   $service = if ($created.service) { $created.service } else { $created }
   $serviceId = $service.id
   Write-Host "     created service $serviceId"
+
+  # The create endpoint can silently default publishPath to /public; force it.
+  if ($service.serviceDetails.publishPath -ne "./dist") {
+    Write-Host "     correcting publishPath ($($service.serviceDetails.publishPath) -> ./dist)"
+    Invoke-Render PATCH "/services/$serviceId" @{ serviceDetails = @{ publishPath = "./dist" } } | Out-Null
+    Invoke-Render POST "/services/$serviceId/deploys" @{ clearCache = "do_not_clear" } | Out-Null
+  }
 }
 
 Write-Host "4/4  Waiting for the deploy to go live (max 10 min)..." -ForegroundColor Cyan
