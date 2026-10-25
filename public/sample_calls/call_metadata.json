@@ -1,0 +1,62 @@
+{
+  "call_101_victim_upi_fraud.wav": {
+    "caller_id": "+91-XXXXXX4821",
+    "caller_type": "Distressed Victim",
+    "crime_type": "UPI Fraud - Unauthorized Debit",
+    "priority_tag": "CRITICAL - GOLDEN HOUR",
+    "transcript": "Hello? Please help me! Someone... someone has taken money from my account! I received an OTP and before I could... they did a digital arrest... my UPI... ₹2,45,000 is gone! Please freeze my account! I'm begging you!",
+    "keywords_detected": [
+      "OTP shared",
+      "digital arrest",
+      "UPI unauthorized debit",
+      "account freeze"
+    ],
+    "timestamp": "2024-10-25T08:47:12+05:30",
+    "duration_sec": 12.0
+  },
+  "call_102_informant_ransomware_tip.wav": {
+    "caller_id": "+91-XXXXXX7293",
+    "caller_type": "Informant Tip",
+    "crime_type": "Ransomware Attack Intelligence",
+    "priority_tag": "HIGH URGENCY",
+    "transcript": "Listen... I can't talk long... there's a group operating from... they're planning a ransomware attack on the municipal server... the malware is already planted... you need to check the backup systems... I'll send proof to the secure email...",
+    "keywords_detected": [
+      "ransomware",
+      "malware",
+      "municipal server",
+      "secure email"
+    ],
+    "timestamp": "2024-10-25T08:52:35+05:30",
+    "duration_sec": 10.0
+  },
+  "call_103_angry_account_compromise.wav": {
+    "caller_id": "+91-XXXXXX1056",
+    "caller_type": "Distressed Victim",
+    "crime_type": "Bank Account Compromise",
+    "priority_tag": "HIGH URGENCY",
+    "transcript": "What the HELL is going on?! My entire savings account has been WIPED OUT! I've been calling your helpline for TWO HOURS! Someone cloned my SIM card and bypassed the authentication! I want the cyber cell HEAD on the phone NOW!",
+    "keywords_detected": [
+      "SIM clone",
+      "authentication bypass",
+      "savings wiped",
+      "cyber cell"
+    ],
+    "timestamp": "2024-10-25T09:01:48+05:30",
+    "duration_sec": 11.0
+  },
+  "call_104_suspected_vishing_caller.wav": {
+    "caller_id": "+91-XXXXXX5580",
+    "caller_type": "Suspected Fraudster / Vishing",
+    "crime_type": "Vishing / Social Engineering Attempt",
+    "priority_tag": "MODERATE",
+    "transcript": "Good morning officer. I am calling from the Reserve Bank compliance department. We have detected suspicious activity on accounts in your jurisdiction. I need you to verify the nodal officer credentials and share the secure access token for the banking portal.",
+    "keywords_detected": [
+      "Reserve Bank impersonation",
+      "credential request",
+      "access token phishing",
+      "social engineering"
+    ],
+    "timestamp": "2024-10-25T09:15:22+05:30",
+    "duration_sec": 10.0
+  }
+}
