@@ -161,6 +161,21 @@ streamlit run app.py
 pnpm run test:smoke   # 44 DOM/interaction assertions (jsdom + Vite SSR build)
 ```
 
+### Deploy to Render
+
+The repository ships a Render Blueprint ([render.yaml](render.yaml)) that provisions a **free static site**:
+
+- Build command: `npm ci && npm run build`
+- Publish directory: `./dist`
+- Node pinned to 22.12.0 via [.node-version](.node-version)
+- SPA rewrite `/* → /index.html` and long-lived caching for `/assets/*`
+
+**One-click:** open <https://render.com/deploy?repo=https://github.com/opzain/Codex_SyedZainuddin> and approve the Blueprint.
+
+**Manual:** Render Dashboard → **New → Blueprint** → connect `opzain/Codex_SyedZainuddin` → **Apply**. Every push to `main` redeploys automatically.
+
+**API:** set `RENDER_API_KEY` (Render → Account Settings → API Keys), then create the static site against `https://api.render.com/v1/services`. The first deploy typically finishes in under two minutes; the public URL looks like `https://cyberser-command-center.onrender.com`.
+
 
 ## 📁 Project Structure
 ```
