@@ -172,9 +172,9 @@ The repository ships a Render Blueprint ([render.yaml](render.yaml)) that provis
 
 **One-click:** open <https://render.com/deploy?repo=https://github.com/opzain/Codex_SyedZainuddin> and approve the Blueprint.
 
-**Manual:** Render Dashboard → **New → Blueprint** → connect `opzain/Codex_SyedZainuddin` → **Apply**. Every push to `main` redeploys automatically.
+**Manual:** Render Dashboard → **New → Blueprint** → connect `opzain/Codex_SyedZainuddin` → **Apply**. This installs the GitHub App webhook, so every push to `main` redeploys automatically.
 
-**API:** set `RENDER_API_KEY` (Render → Account Settings → API Keys), then run `./scripts/deploy-render.ps1 -ApiKey rnd_...`. The script creates a `static_site`, forces the publish path to `./dist` (the REST field is `publishPath`, not the Blueprint's `staticPublishPath`), waits for the deploy to go live, and prints the URL. The Blueprint additionally installs the SPA rewrite and asset-cache headers.
+**API:** set `RENDER_API_KEY` (Render → Account Settings → API Keys), then run `./scripts/deploy-render.ps1 -ApiKey rnd_...`. The script creates a `static_site`, forces the publish path to `./dist` (the REST field is `publishPath`, not the Blueprint's `staticPublishPath`), waits for the deploy to go live, and prints the URL. A service created this way has no GitHub webhook: trigger builds with `POST /v1/services/{id}/deploys` or click **Manual Deploy** in the dashboard. Connect the repo under **Settings → Build & Deploy** to enable push-to-deploy.
 
 Live instance: <https://cyberser-command-center.onrender.com>
 
