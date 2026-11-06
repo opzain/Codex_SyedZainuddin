@@ -5,3 +5,7 @@ librosa>=0.10.1
 plotly>=5.18.0
 pandas>=2.0.0
 soundfile>=0.12.1
+
+# Demo voice generation (optional; requires network access for neural TTS)
+edge-tts>=7.0.0
+imageio-ffmpeg>=0.5.1

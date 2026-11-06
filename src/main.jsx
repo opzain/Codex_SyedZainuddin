@@ -90,14 +90,36 @@ const PROFILE_LIBRARY = {
   },
   "104": {
     risk: "MODERATE",
-    urgency: 54,
-    tag: "REVIEW",
+    urgency: 58,
+    tag: "SUSPECT CALL",
     base: { distress: 15, fear: 12, anger: 17, nervousness: 39, calm: 78 },
     f0: 142,
     jitter: 1.7,
     rms: 0.19,
     speechRate: 3.6,
     semanticBonus: 14,
+  },
+  "105": {
+    risk: "CRITICAL",
+    urgency: 95,
+    tag: "VULNERABLE ADULT",
+    base: { distress: 88, fear: 84, anger: 12, nervousness: 66, calm: 14 },
+    f0: 210,
+    jitter: 5.4,
+    rms: 0.24,
+    speechRate: 3.4,
+    semanticBonus: 30,
+  },
+  "106": {
+    risk: "HIGH",
+    urgency: 71,
+    tag: "SUSPECT EVIDENCE",
+    base: { distress: 18, fear: 10, anger: 22, nervousness: 34, calm: 80 },
+    f0: 132,
+    jitter: 2.1,
+    rms: 0.30,
+    speechRate: 4.2,
+    semanticBonus: 34,
   },
   local: {
     risk: "MODERATE",
@@ -119,38 +141,62 @@ const FALLBACK_CALLS = [
     audioUrl: "/sample_calls/call_101_victim_upi_fraud.wav",
     callerId: "+91-XXXXXX4821",
     callerType: "Distressed Victim",
-    crimeType: "UPI Fraud — Unauthorized Debit",
+    role: "victim",
+    crimeType: "UPI Fraud - Digital Arrest Coercion",
     timestamp: "08:47:12",
-    duration: 12,
+    duration: 31.4,
     transcript:
-      "Hello? Please help me! Someone... someone has taken money from my account! I received an OTP and before I could... they did a digital arrest... my UPI... ₹2,45,000 is gone! Please freeze my account! I'm begging you!",
+      "Hello? Please, you have to help me. Someone has taken money from my account. I got a call this morning from a man who said he was from the bank. He told me my account was under digital arrest. He said I would be jailed if I did not cooperate. He asked me to share the one time password. I shared it. Two minutes later, two lakh forty five thousand rupees was gone. Please freeze my account. I am begging you.",
     keywords: ["OTP shared", "digital arrest", "UPI unauthorized debit", "account freeze"],
+    channel: "1930 helpline",
+    language: "English (Indian)",
+    scamPattern: "Digital arrest",
+    vulnerability: ["Coercion", "Active financial loss"],
+    jurisdiction: "Mumbai Cyber Cell",
+    slaMinutes: 15,
+    callReference: "MH-1930-10482",
   },
   {
     id: "102",
     filename: "call_102_informant_ransomware_tip.wav",
     audioUrl: "/sample_calls/call_102_informant_ransomware_tip.wav",
     callerId: "+91-XXXXXX7293",
-    callerType: "Informant Tip",
+    callerType: "Anonymous Informant",
+    role: "informant",
     crimeType: "Ransomware Attack Intelligence",
     timestamp: "08:52:35",
-    duration: 10,
+    duration: 34.5,
     transcript:
-      "Listen... I can't talk long... there's a group operating from... they're planning a ransomware attack on the municipal server... the malware is already planted... you need to check the backup systems... I'll send proof to the secure email...",
-    keywords: ["ransomware", "malware", "municipal server", "secure email"],
+      "Listen, I cannot talk for long. I work as a contract system administrator. A group is planning a ransomware attack on the municipal server. The malware is already inside the backup network. They are asking for fifty lakh rupees in crypto. You need to check the backup systems tonight. I will send proof to the secure email address on your website. Please do not call this number again.",
+    keywords: ["ransomware", "municipal server", "backup network", "crypto demand"],
+    channel: "Anonymous tip line",
+    language: "English (Indian)",
+    scamPattern: "Ransomware extortion",
+    vulnerability: ["Critical infrastructure", "Time-bound threat"],
+    jurisdiction: "Pune Cyber Cell",
+    slaMinutes: 30,
+    callReference: "MH-TIP-22190",
   },
   {
     id: "103",
     filename: "call_103_angry_account_compromise.wav",
     audioUrl: "/sample_calls/call_103_angry_account_compromise.wav",
     callerId: "+91-XXXXXX1056",
-    callerType: "Distressed Victim",
-    crimeType: "Bank Account Compromise",
+    callerType: "Angry Victim",
+    role: "victim",
+    crimeType: "Bank Account Compromise - SIM Swap",
     timestamp: "09:01:48",
-    duration: 11,
+    duration: 27.1,
     transcript:
-      "What the HELL is going on?! My entire savings account has been WIPED OUT! I've been calling your helpline for TWO HOURS! Someone cloned my SIM card and bypassed the authentication! I want the cyber cell HEAD on the phone NOW!",
-    keywords: ["SIM clone", "authentication bypass", "savings wiped", "cyber cell"],
+      "What the hell is going on? My entire savings account has been wiped out. I have been calling your helpline for two hours. Someone cloned my SIM card and bypassed the authentication. They transferred nine lakh rupees in four transactions. I want the cyber cell head on the phone right now. And I want a written complaint number before I hang up.",
+    keywords: ["SIM clone", "authentication bypass", "savings wiped", "written complaint"],
+    channel: "Transferred from branch",
+    language: "English (Indian)",
+    scamPattern: "SIM swap takeover",
+    vulnerability: ["Total savings lost", "Escalation risk"],
+    jurisdiction: "Delhi Cyber Cell",
+    slaMinutes: 30,
+    callReference: "DL-1930-33917",
   },
   {
     id: "104",
@@ -158,12 +204,62 @@ const FALLBACK_CALLS = [
     audioUrl: "/sample_calls/call_104_suspected_vishing_caller.wav",
     callerId: "+91-XXXXXX5580",
     callerType: "Suspected Fraudster / Vishing",
-    crimeType: "Vishing / Social Engineering Attempt",
+    role: "suspect",
+    crimeType: "Vishing - RBI Impersonation",
     timestamp: "09:15:22",
-    duration: 10,
+    duration: 22.8,
     transcript:
-      "Good morning officer. I am calling from the Reserve Bank compliance department. We have detected suspicious activity on accounts in your jurisdiction. I need you to verify the nodal officer credentials and share the secure access token for the banking portal.",
-    keywords: ["Reserve Bank impersonation", "credential request", "access token phishing"],
+      "Good morning, officer. I am calling from the Reserve Bank compliance department. We have detected suspicious activity on accounts in your jurisdiction. I need you to verify the nodal officer credentials and share the secure access token for the banking portal. This is a time sensitive audit. Please do not disconnect the call.",
+    keywords: ["Reserve Bank impersonation", "credential request", "access token", "social engineering"],
+    channel: "Recorded by complainant",
+    language: "English (British accent)",
+    scamPattern: "Authority impersonation",
+    vulnerability: ["Credential phishing", "Insider target"],
+    jurisdiction: "Bengaluru Cyber Cell",
+    slaMinutes: 60,
+    callReference: "KA-SUS-88214",
+  },
+  {
+    id: "105",
+    filename: "call_105_elderly_digital_arrest.wav",
+    audioUrl: "/sample_calls/call_105_elderly_digital_arrest.wav",
+    callerId: "+91-XXXXXX9074",
+    callerType: "Elderly Victim",
+    role: "victim",
+    crimeType: "Digital Arrest Scam - Elderly Victim",
+    timestamp: "09:22:07",
+    duration: 39.9,
+    transcript:
+      "Officer, I am seventy two years old and I live alone. This afternoon I received a video call. The man was wearing a police uniform. He said my Aadhaar card was linked to a money laundering case, and that a warrant had been issued. He said I was under digital arrest and could not tell anyone. He made me transfer one lakh eighty thousand rupees as a verification deposit. Then he demanded five lakh more. I am scared. Please tell me what to do.",
+    keywords: ["digital arrest", "police impersonation", "Aadhaar linked", "verification deposit"],
+    channel: "1930 helpline",
+    language: "English (Indian)",
+    scamPattern: "Digital arrest",
+    vulnerability: ["Elderly", "Lives alone", "Ongoing coercion"],
+    jurisdiction: "Kolkata Cyber Cell",
+    slaMinutes: 15,
+    callReference: "WB-1930-77103",
+  },
+  {
+    id: "106",
+    filename: "call_106_mule_account_recruiter.wav",
+    audioUrl: "/sample_calls/call_106_mule_account_recruiter.wav",
+    callerId: "+91-XXXXXX6312",
+    callerType: "Suspected Mule Recruiter",
+    role: "suspect",
+    crimeType: "Mule Account Recruitment - Suspect Call",
+    timestamp: "09:31:55",
+    duration: 28.8,
+    transcript:
+      "Hey, listen. I have a simple job for you. You do not have to do anything illegal. Just open a current account and give me the debit card and the SIM card. I will pay you five thousand rupees every month. The money that comes in is from a gaming company. Nothing will happen to you. Nobody checks these accounts. Are you interested or not?",
+    keywords: ["mule account", "debit card request", "SIM handover", "monthly payout"],
+    channel: "Uploaded by complainant",
+    language: "English (Indian)",
+    scamPattern: "Money mule recruitment",
+    vulnerability: ["Financial crime enabler", "Student target"],
+    jurisdiction: "Hyderabad Cyber Cell",
+    slaMinutes: 60,
+    callReference: "TS-SUS-45019",
   },
 ].map(applyProfile);
 
@@ -229,11 +325,19 @@ function normaliseMetadata(metadata) {
         audioUrl: `/sample_calls/${encodeURIComponent(filename)}`,
         callerId: item.caller_id || "Private caller",
         callerType: item.caller_type || "Unknown caller",
+        role: item.role || "victim",
         crimeType: item.crime_type || "Unclassified incident",
         timestamp,
         duration: Number(item.duration_sec) || 10,
         transcript: item.transcript || "No transcript is available for this evidence item.",
         keywords: item.keywords_detected || [],
+        channel: item.channel || "1930 helpline",
+        language: item.language || "English (Indian)",
+        scamPattern: item.scam_pattern || "Unclassified pattern",
+        vulnerability: item.vulnerability || [],
+        jurisdiction: item.jurisdiction || "Unassigned cyber cell",
+        slaMinutes: Number(item.sla_minutes) || 60,
+        callReference: item.call_reference || `REF-${id}`,
       });
     })
     .sort((left, right) => right.urgency - left.urgency);
@@ -533,7 +637,7 @@ function QueueList({ calls, selectedId, onSelect, onOpenMonitor }) {
               <span className={`queue-severity ${risk.className}`} />
               <span className="queue-main">
                 <span className="queue-call-top"><strong>{call.crimeType}</strong><RiskBadge score={call.urgency} tag={call.tag} /></span>
-                <small>{call.callerType} · {call.callerId} · {call.timestamp}</small>
+                <small>{call.callerType} · {call.callerId} · {call.timestamp}{call.scamPattern ? ` · ${call.scamPattern}` : ""}</small>
               </span>
               <span className="queue-score"><b>{Math.round(call.urgency)}</b><small>URGENCY</small></span>
               <span className="queue-open" onClick={(event) => { event.stopPropagation(); onOpenMonitor(call.id); }} role="button" tabIndex={0} aria-label={`Open ${call.crimeType} in live monitor`}>↗</span>
@@ -922,6 +1026,15 @@ function MonitorPanel({
           <div><span>CALLER PROFILE</span><strong>{call.callerType}</strong></div>
           <div><span>WINDOW</span><strong>{formatTime(currentTime)} · 250ms</strong></div>
         </div>
+        <div className="case-context">
+          <span className={`context-chip role-${call.role || "victim"}`}>{(call.role || "victim").toUpperCase()}</span>
+          <span className="context-chip">{call.channel || "1930 helpline"}</span>
+          <span className="context-chip">{call.language || "English (Indian)"}</span>
+          <span className="context-chip pattern">{call.scamPattern || "Unclassified pattern"}</span>
+          {(call.vulnerability || []).slice(0, 2).map((flag) => <span key={flag} className="context-chip warn">{flag}</span>)}
+          <span className="context-sla">SLA {call.slaMinutes ?? 60} min · {call.jurisdiction || "Cyber cell"}</span>
+          <span className="context-ref">{call.callReference || `REF-${call.id}`}</span>
+        </div>
         <SignalScope analyserRef={analyserRef} currentTime={currentTime} duration={duration} isPlaying={isPlaying} isRecording={isRecording} accent={accent} />
         <AudioTransport
           isPlaying={isPlaying}
@@ -1032,7 +1145,11 @@ function QueueView({ calls, selectedId, onSelect, onOpenMonitor, onAction }) {
             <button type="button" className={`full-queue-row ${selectedId === call.id ? "selected" : ""}`} key={call.id} onClick={() => onSelect(call.id)}>
               <span className="full-case"><RiskBadge score={call.urgency} tag={call.tag} /><strong>#{call.id}</strong><small>{call.crimeType}</small></span>
               <span><strong>{call.callerType}</strong><small>{call.callerId}</small></span>
-              <span className="queue-keywords">{call.keywords.slice(0, 2).map((keyword) => <i key={keyword}>{keyword}</i>)}</span>
+              <span className="queue-keywords">
+                {call.scamPattern && <i className="queue-chip">{call.scamPattern}</i>}
+                {call.keywords.slice(0, 2).map((keyword) => <i key={keyword}>{keyword}</i>)}
+                <em className="queue-sla">SLA {call.slaMinutes ?? 60}m</em>
+              </span>
               <span className="full-score"><b>{Math.round(call.urgency)}</b><span><i style={{ width: `${call.urgency}%` }} /></span></span>
               <span className="row-open" onClick={(event) => { event.stopPropagation(); onOpenMonitor(call.id); }} role="button" tabIndex={0}>Open ↗</span>
             </button>

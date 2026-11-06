@@ -136,8 +136,8 @@ venv\Scripts\activate     # Windows
 # Install dependencies
 pip install -r requirements.txt
 
-# Generate demo audio files
-python generate_demo_calls.py
+# Generate the six English demo calls (network required for neural TTS)
+python generate_voice_calls.py
 
 # Launch the React command center
 npm install
@@ -146,6 +146,24 @@ npm run dev
 # Optional legacy Streamlit interface
 streamlit run app.py
 ```
+
+### Demo call library
+
+All six calls use clear English neural voices at 16 kHz mono, so a reviewer can follow what
+the caller is actually reporting. `generate_voice_calls.py` writes the WAV files and
+`call_metadata.json` into both `sample_calls/` and `public/sample_calls/`.
+
+| Case | Role | Scenario | Pattern | Length |
+|------|------|----------|---------|--------|
+| 101 | Victim | UPI fraud under a "digital arrest" threat | Digital arrest | ~31 s |
+| 102 | Informant | Ransomware attack on a municipal server | Ransomware extortion | ~35 s |
+| 103 | Victim | Savings wiped after a SIM swap | SIM swap takeover | ~27 s |
+| 104 | Suspect | Caller impersonating RBI compliance | Authority impersonation | ~23 s |
+| 105 | Victim | 72-year-old alone, coerced into a "verification deposit" | Digital arrest | ~40 s |
+| 106 | Suspect | Recruiting a money-mule bank account | Money mule recruitment | ~29 s |
+
+Each case also carries real-world context shown in the UI: intake channel, language,
+scam pattern, vulnerability flags, jurisdiction, response SLA, and a call reference.
 
 ### Command center interactions
 
@@ -161,7 +179,7 @@ streamlit run app.py
 ### Verification
 
 ```bash
-npm run test:smoke   # 62 DOM/interaction assertions (jsdom + Vite SSR build)
+npm run test:smoke   # 64 DOM/interaction assertions (jsdom + Vite SSR build)
 npm run test:play    # 9 real-browser playback assertions (Edge/Chrome via playwright-core)
 ```
 
@@ -194,7 +212,8 @@ vegnaverse/
 ├── package.json                    # React/Vite scripts
 ├── app.py                          # Optional legacy Streamlit UI
 ├── audio_engine.py                 # DSP analysis engine
-├── generate_demo_calls.py          # Demo audio synthesizer
+├── generate_voice_calls.py         # Six English demo calls via neural TTS
+├── generate_demo_calls.py          # Legacy synthetic-tone generator (kept for reference)
 ├── requirements.txt                # Python dependencies
 ├── README.md                       # Documentation
 └── sample_calls/                   # Generated demo audio
@@ -202,6 +221,8 @@ vegnaverse/
     ├── call_102_informant_ransomware_tip.wav
     ├── call_103_angry_account_compromise.wav
     ├── call_104_suspected_vishing_caller.wav
+    ├── call_105_elderly_digital_arrest.wav
+    ├── call_106_mule_account_recruiter.wav
     └── call_metadata.json
 ```
 

@@ -171,6 +171,9 @@ check("transport flips to pause state", $(".transport-play")?.textContent === "â
 
 // 6. Waveform canvas and radar react to playback
 check("waveform canvas present", Boolean($(".signal-scope")));
+const contextChips = $$(".case-context .context-chip");
+check("case context strip renders", contextChips.length >= 4, `found ${contextChips.length}`);
+check("case context shows role and pattern", contextChips.some((chip) => /VICTIM|SUSPECT|INFORMANT/.test(chip.textContent)) && Boolean($(".case-context .context-chip.pattern")));
 const radar = $(".radar-chart");
 check("radar chart present", Boolean(radar));
 check("radar switches to live tracking", radar?.classList.contains("radar-active"), radar?.className);
@@ -194,7 +197,7 @@ const queueTab = $$(".topbar-tab").find((node) => node.textContent.includes("Tri
 queueTab.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 await settle(100);
 const queueRows = $$(".full-queue-row");
-check("triage queue rows render", queueRows.length === 4, `found ${queueRows.length}`);
+check("triage queue rows render", queueRows.length === 6, `found ${queueRows.length}`);
 queueRows[2].dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 await settle(100);
 const selectedRow = $(".full-queue-row.selected");
