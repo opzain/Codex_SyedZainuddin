@@ -11,6 +11,24 @@ import "./styles.css";
 const HOP_SECONDS = 0.25;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
+// Render's CDN caches static files for a few minutes even across deploys.
+// Version demo assets with the hashed bundle id so a fresh deploy is visible
+// immediately instead of serving a stale call_metadata.json / WAV.
+const BUILD_ID = (() => {
+  try {
+    const script = document.querySelector('script[type="module"][src*="/assets/"]');
+    const match = script?.getAttribute("src")?.match(/index-([A-Za-z0-9_-]+)\.js/);
+    return match?.[1] || "dev";
+  } catch {
+    return "dev";
+  }
+})();
+
+function versionedAsset(path) {
+  if (!path || !path.startsWith("/sample_calls/")) return path;
+  return `${path}?v=${BUILD_ID}`;
+}
+
 const NAV_ITEMS = [
   { id: "overview", label: "Overview", icon: "◈", hint: "Command pulse" },
   { id: "queue", label: "Triage Queue", icon: "◉", hint: "04 active" },
@@ -138,7 +156,7 @@ const FALLBACK_CALLS = [
   {
     id: "101",
     filename: "call_101_victim_upi_fraud.wav",
-    audioUrl: "/sample_calls/call_101_victim_upi_fraud.wav",
+    audioUrl: versionedAsset("/sample_calls/call_101_victim_upi_fraud.wav"),
     callerId: "+91-XXXXXX4821",
     callerType: "Distressed Victim",
     role: "victim",
@@ -159,7 +177,7 @@ const FALLBACK_CALLS = [
   {
     id: "102",
     filename: "call_102_informant_ransomware_tip.wav",
-    audioUrl: "/sample_calls/call_102_informant_ransomware_tip.wav",
+    audioUrl: versionedAsset("/sample_calls/call_102_informant_ransomware_tip.wav"),
     callerId: "+91-XXXXXX7293",
     callerType: "Anonymous Informant",
     role: "informant",
@@ -180,7 +198,7 @@ const FALLBACK_CALLS = [
   {
     id: "103",
     filename: "call_103_angry_account_compromise.wav",
-    audioUrl: "/sample_calls/call_103_angry_account_compromise.wav",
+    audioUrl: versionedAsset("/sample_calls/call_103_angry_account_compromise.wav"),
     callerId: "+91-XXXXXX1056",
     callerType: "Angry Victim",
     role: "victim",
@@ -201,7 +219,7 @@ const FALLBACK_CALLS = [
   {
     id: "104",
     filename: "call_104_suspected_vishing_caller.wav",
-    audioUrl: "/sample_calls/call_104_suspected_vishing_caller.wav",
+    audioUrl: versionedAsset("/sample_calls/call_104_suspected_vishing_caller.wav"),
     callerId: "+91-XXXXXX5580",
     callerType: "Suspected Fraudster / Vishing",
     role: "suspect",
@@ -222,7 +240,7 @@ const FALLBACK_CALLS = [
   {
     id: "105",
     filename: "call_105_elderly_digital_arrest.wav",
-    audioUrl: "/sample_calls/call_105_elderly_digital_arrest.wav",
+    audioUrl: versionedAsset("/sample_calls/call_105_elderly_digital_arrest.wav"),
     callerId: "+91-XXXXXX9074",
     callerType: "Elderly Victim",
     role: "victim",
@@ -243,7 +261,7 @@ const FALLBACK_CALLS = [
   {
     id: "106",
     filename: "call_106_mule_account_recruiter.wav",
-    audioUrl: "/sample_calls/call_106_mule_account_recruiter.wav",
+    audioUrl: versionedAsset("/sample_calls/call_106_mule_account_recruiter.wav"),
     callerId: "+91-XXXXXX6312",
     callerType: "Suspected Mule Recruiter",
     role: "suspect",
@@ -322,7 +340,7 @@ function normaliseMetadata(metadata) {
       return applyProfile({
         id,
         filename,
-        audioUrl: `/sample_calls/${encodeURIComponent(filename)}`,
+        audioUrl: versionedAsset(`/sample_calls/${encodeURIComponent(filename)}`),
         callerId: item.caller_id || "Private caller",
         callerType: item.caller_type || "Unknown caller",
         role: item.role || "victim",
@@ -1397,7 +1415,7 @@ function App() {
 
   useEffect(() => {
     let mounted = true;
-    fetch("/sample_calls/call_metadata.json")
+    fetch(`/sample_calls/call_metadata.json?v=${BUILD_ID}`)
       .then((response) => {
         if (!response.ok) throw new Error("Metadata request failed");
         return response.json();
