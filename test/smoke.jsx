@@ -228,6 +228,60 @@ piiToggle.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 await settle(80);
 check("PII toggle changes state", $(".transcript-panel .toggle")?.textContent !== piiBefore, `${piiBefore} -> ${$(".transcript-panel .toggle")?.textContent}`);
 
+// 14. Guided demo walks through every step and closes
+$$(".topbar-tab").find((node) => node.textContent.includes("Live Monitor"))
+  .dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+await settle(100);
+const demoButton = $(".demo-action");
+check("guided demo button present", Boolean(demoButton));
+demoButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+await settle(120);
+check("guided demo opens on step 1", Boolean($(".tour-card")) && $(".tour-badge")?.textContent.includes("1/"), $(".tour-badge")?.textContent);
+for (let step = 2; step <= 5; step += 1) {
+  const next = $$(".tour-actions .tour-primary").pop();
+  next.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  await settle(80);
+  check(`guided demo advances to step ${step}`, $(".tour-badge")?.textContent.includes(`${step}/`), $(".tour-badge")?.textContent);
+  if (step === 4) {
+    check("guided demo switches to Triage Queue", $(".topbar-title h1")?.textContent.includes("Triage Queue"), $(".topbar-title h1")?.textContent);
+  }
+  if (step === 5) {
+    check("guided demo switches to Case Files", $(".topbar-title h1")?.textContent.includes("Case Files"), $(".topbar-title h1")?.textContent);
+  }
+}
+$$(".tour-actions .tour-primary").pop().dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+await settle(80);
+check("guided demo finishes and closes", !$(".tour-card"));
+
+// 15. Keyboard shortcuts: 1-5 switch views, ? opens the tour, Escape closes it
+window.dispatchEvent(new window.KeyboardEvent("keydown", { key: "4", code: "Digit4", bubbles: true }));
+await settle(100);
+check("keyboard 4 opens Intelligence", $(".topbar-title h1")?.textContent.includes("Intelligence"), $(".topbar-title h1")?.textContent);
+window.dispatchEvent(new window.KeyboardEvent("keydown", { key: "?", code: "Slash", shiftKey: true, bubbles: true }));
+await settle(100);
+check("keyboard ? opens the guided demo", Boolean($(".tour-card")));
+window.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true }));
+await settle(80);
+check("keyboard Escape closes the guided demo", !$(".tour-card"));
+
+// 16. Audio loading state clears when playback starts
+$$(".topbar-tab").find((node) => node.textContent.includes("Live Monitor"))
+  .dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+await settle(100);
+$(".transport-play").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+await settle(150);
+check("buffering notice clears on play", !$(".audio-loading"), $(".audio-loading")?.textContent);
+$(".transport-play").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+await settle(80);
+
+// 17. Static shell metadata (favicon, description, social cards)
+const shell = fs.readFileSync("index.html", "utf8");
+check("shell links an SVG favicon", shell.includes('rel="icon"') && shell.includes("/favicon.svg"));
+check("shell has a meta description", /name="description"/.test(shell));
+check("shell has Open Graph tags", /property="og:title"/.test(shell) && /property="og:description"/.test(shell));
+check("shell has theme colour", /name="theme-color"/.test(shell));
+check("favicon asset exists", fs.existsSync("public/favicon.svg"));
+
 console.log("\n=== SMOKE RESULTS ===");
 for (const result of results) console.log(`${result.ok ? "PASS" : "FAIL"}  ${result.name}${result.detail ? `  (${result.detail})` : ""}`);
 console.log(`\n${results.filter((r) => r.ok).length}/${results.length} checks passed`);

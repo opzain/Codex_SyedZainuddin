@@ -154,11 +154,14 @@ streamlit run app.py
 - **Live visuals** — waveform, emotion radar, emotion timeline, MFCC column, and transcript playhead all follow the audio playhead (or the microphone stream while capturing).
 - **Live clock** — the header shows a live IST clock (HH:MM:SS plus date) refreshed every second from the system clock.
 - **Microphone capture** — `Mic capture` records locally, streams a live transcript when the browser exposes speech recognition, and feeds the same waveform/radar pipeline.
+- **Guided demo** — `▶ Guided demo` (or press `?`) walks a reviewer through play → signals → transcript → queue → evidence in five steps, switching views automatically.
+- **Keyboard shortcuts** — `Space` play/pause, `1`–`5` jump to a workspace, `?` opens the guided demo, `Esc` closes overlays.
+- **Resilient playback** — the transport shows a buffering state while a source loads and a `Reload audio` action if decoding fails.
 
 ### Verification
 
 ```bash
-pnpm run test:smoke   # 44 DOM/interaction assertions (jsdom + Vite SSR build)
+pnpm run test:smoke   # 62 DOM/interaction assertions (jsdom + Vite SSR build)
 ```
 
 ### Deploy to Render

@@ -19,6 +19,34 @@ const NAV_ITEMS = [
   { id: "cases", label: "Case Files", icon: "◌", hint: "Evidence desk" },
 ];
 
+const TOUR_STEPS = [
+  {
+    view: "monitor",
+    title: "Play the evidence",
+    body: "Press play on the transport. The waveform, emotion radar and timeline all read from the same audio clock — nothing is pre-rendered.",
+  },
+  {
+    view: "monitor",
+    title: "Watch the signals move",
+    body: "The radar polygon breathes and the timeline playhead advances with the call. Stress indicators are assistive, not determinations.",
+  },
+  {
+    view: "monitor",
+    title: "Follow the transcript",
+    body: "The active segment highlights as the caller speaks. Toggle PII to mask identifiers in the display only — the audio is untouched.",
+  },
+  {
+    view: "queue",
+    title: "Rank the queue",
+    body: "Triage Queue sorts every call by composite urgency, so the critical UPI fraud case stays at the top of the list.",
+  },
+  {
+    view: "cases",
+    title: "Prove the evidence",
+    body: "Case Files shows the SHA-256 fingerprint and exports a review-ready brief. Every escalation still requires a human officer.",
+  },
+];
+
 const RISK_CONFIG = {
   CRITICAL: { accent: "#ff4d7d", label: "CRITICAL", className: "critical" },
   HIGH: { accent: "#ff9f43", label: "HIGH", className: "high" },
@@ -877,6 +905,8 @@ function MonitorPanel({
   onSeek,
   onRestart,
   audioUnavailable,
+  audioLoading,
+  onRetryAudio,
 }) {
   const accent = getRisk(currentFrame.urgency).accent;
   return (
@@ -902,7 +932,13 @@ function MonitorPanel({
           onRestart={onRestart}
           disabled={isRecording || audioUnavailable}
         />
-        {audioUnavailable && <p className="audio-error">Audio source is unavailable. Select another evidence item or upload a valid audio file.</p>}
+        {audioLoading && !audioUnavailable && <p className="audio-loading"><span className="live-pulse" /> Loading evidence audio…</p>}
+        {audioUnavailable && (
+          <p className="audio-error">
+            Audio source is unavailable. Select another evidence item or upload a valid audio file.
+            <button type="button" className="audio-retry" onClick={onRetryAudio}>Reload audio</button>
+          </p>
+        )}
       </Panel>
 
       <Panel eyebrow="PRIORITY ENGINE" title="Urgency posture" className="monitor-card gauge-panel">
@@ -1100,6 +1136,33 @@ function ConfirmModal({ action, onClose, onConfirm }) {
   );
 }
 
+function GuidedTour({ step, onNext, onPrev, onClose, onPlay }) {
+  if (step === null) return null;
+  const total = TOUR_STEPS.length;
+  const item = TOUR_STEPS[step];
+  const last = step === total - 1;
+  return (
+    <div className="tour-layer" role="dialog" aria-label="Guided demo" aria-live="polite">
+      <div className="tour-card">
+        <div className="tour-top">
+          <span className="tour-badge">GUIDED DEMO · {step + 1}/{total}</span>
+          <button type="button" className="tour-close" onClick={onClose} aria-label="End guided demo">×</button>
+        </div>
+        <h3>{item.title}</h3>
+        <p>{item.body}</p>
+        <div className="tour-dots" aria-hidden="true">
+          {TOUR_STEPS.map((_, index) => <span key={index} className={index === step ? "on" : ""} />)}
+        </div>
+        <div className="tour-actions">
+          <button type="button" className="tour-ghost" onClick={onPrev} disabled={step === 0}>Back</button>
+          {step === 0 && <button type="button" className="tour-primary" onClick={onPlay}>Play call</button>}
+          <button type="button" className="tour-primary" onClick={last ? onClose : onNext}>{last ? "Finish" : "Next"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [calls, setCalls] = useState(FALLBACK_CALLS);
   const [selectedId, setSelectedId] = useState(FALLBACK_CALLS[0].id);
@@ -1115,7 +1178,8 @@ function App() {
     { id: "guardrail", time: "NOW", tone: "amber", message: "Responsible AI guardrail acknowledged." },
     { id: "queue", time: "NOW", tone: "pink", message: "Critical UPI fraud call remains first in queue." },
   ]);
-  const [audioState, setAudioState] = useState({ currentTime: 0, duration: FALLBACK_CALLS[0].duration, isPlaying: false, error: "" });
+  const [audioState, setAudioState] = useState({ currentTime: 0, duration: FALLBACK_CALLS[0].duration, isPlaying: false, error: "", loading: false });
+  const [tourStep, setTourStep] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordElapsed, setRecordElapsed] = useState(0);
   const [captureTranscript, setCaptureTranscript] = useState("");
@@ -1320,6 +1384,41 @@ function App() {
     logEvent(`${navItem?.label || "Command"} view opened.`, "purple");
   }, [logEvent]);
 
+  useEffect(() => {
+    if (tourStep === null) return;
+    const targetView = TOUR_STEPS[tourStep]?.view;
+    if (targetView) setActiveView(targetView);
+  }, [tourStep]);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      const tag = event.target?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select" || event.target?.isContentEditable) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.code === "Space") {
+        event.preventDefault();
+        togglePlayback();
+        return;
+      }
+      if (event.key >= "1" && event.key <= "5") {
+        const item = NAV_ITEMS[Number(event.key) - 1];
+        if (item) navigate(item.id);
+        return;
+      }
+      if (event.key === "?") {
+        setTourStep(0);
+        return;
+      }
+      if (event.key === "Escape") {
+        setTourStep(null);
+        setSettingsOpen(false);
+        setConfirmAction(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [navigate, togglePlayback]);
+
   const updateCallDuration = useCallback((duration) => {
     if (!Number.isFinite(duration) || duration <= 0) return;
     setCalls((existing) => existing.map((call) => call.id === selectedIdRef.current ? { ...call, duration } : call));
@@ -1327,20 +1426,30 @@ function App() {
 
   const handleLoadedMetadata = useCallback((event) => {
     const duration = Number(event.currentTarget.duration);
-    setAudioState((state) => ({ ...state, duration: Number.isFinite(duration) ? duration : state.duration, error: "" }));
+    setAudioState((state) => ({ ...state, duration: Number.isFinite(duration) ? duration : state.duration, error: "", loading: false }));
     updateCallDuration(duration);
   }, [updateCallDuration]);
+
+  const retryAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !selectedCall?.audioUrl) return;
+    syntheticKeysRef.current.delete(`${selectedCall.id}:${selectedCall.duration}`);
+    setAudioState((state) => ({ ...state, error: "", loading: true, currentTime: 0 }));
+    audio.src = selectedCall.audioUrl;
+    audio.load();
+    announce("Reloading the evidence audio source.", "default");
+  }, [announce, selectedCall]);
 
   const handleAudioError = useCallback(() => {
     const audio = audioRef.current;
     const call = selectedCallRef.current;
     if (!audio || !call) {
-      setAudioState((state) => ({ ...state, isPlaying: false, error: "The selected audio source could not be loaded." }));
+      setAudioState((state) => ({ ...state, isPlaying: false, loading: false, error: "The selected audio source could not be loaded." }));
       return;
     }
     const key = `${call.id}:${call.duration}`;
     if (syntheticKeysRef.current.has(key)) {
-      setAudioState((state) => ({ ...state, isPlaying: false, error: "Audio could not be decoded by this browser." }));
+      setAudioState((state) => ({ ...state, isPlaying: false, loading: false, error: "Audio could not be decoded by this browser." }));
       return;
     }
     syntheticKeysRef.current.add(key);
@@ -1349,7 +1458,7 @@ function App() {
     localUrlsRef.current.add(url);
     audio.src = url;
     audio.load();
-    setAudioState((state) => ({ ...state, currentTime: 0, duration: call.duration || 10, error: "" }));
+    setAudioState((state) => ({ ...state, currentTime: 0, duration: call.duration || 10, error: "", loading: false }));
     announce(`Built-in synthetic voice sample generated for CASE-${call.id}.`, "warning");
     logEvent(`Synthetic voice sample generated for CASE-${call.id}.`, "amber");
   }, [announce, logEvent]);
@@ -1360,7 +1469,7 @@ function App() {
     audio.pause();
     audio.src = selectedCall.audioUrl;
     audio.load();
-    setAudioState({ currentTime: 0, duration: selectedCall.duration || 0, isPlaying: false, error: "" });
+    setAudioState({ currentTime: 0, duration: selectedCall.duration || 0, isPlaying: false, error: "", loading: true });
     if (activeAnalyserRef.current === playbackAnalyserRef.current) activeAnalyserRef.current = playbackAnalyserRef.current;
     // Safety net: if the bundled asset cannot be decoded in time, swap in a
     // deterministic synthetic voice sample so a demo can always be played.
@@ -1593,6 +1702,8 @@ function App() {
     onSeek: seekAudio,
     onRestart: restartAudio,
     audioUnavailable: Boolean(audioState.error),
+    audioLoading: Boolean(audioState.loading),
+    onRetryAudio: retryAudio,
     events,
   };
 
@@ -1613,10 +1724,11 @@ function App() {
     <div className={`app-shell ${reducedMotion ? "reduced-motion" : ""}`}>
       <audio
         ref={audioRef}
-        preload="metadata"
+        preload="auto"
         onLoadedMetadata={handleLoadedMetadata}
+        onCanPlay={() => setAudioState((state) => ({ ...state, loading: false, error: "" }))}
         onTimeUpdate={(event) => setAudioState((state) => ({ ...state, currentTime: event.currentTarget.currentTime }))}
-        onPlay={() => setAudioState((state) => ({ ...state, isPlaying: true, error: "" }))}
+        onPlay={() => setAudioState((state) => ({ ...state, isPlaying: true, loading: false, error: "" }))}
         onPause={() => setAudioState((state) => ({ ...state, isPlaying: false }))}
         onEnded={() => { setAudioState((state) => ({ ...state, isPlaying: false, currentTime: state.duration })); logEvent(`Playback completed for CASE-${selectedIdRef.current}.`, "teal"); }}
         onError={handleAudioError}
@@ -1646,6 +1758,9 @@ function App() {
               <span className="clock-digits">{currentTimeLabel}</span>
               <span className="clock-meta"><span className="clock-date">{currentDate}</span><span className="clock-tz">IST · LIVE</span></span>
             </div>
+            <button type="button" className="header-action demo-action" onClick={() => setTourStep(0)} title="Guided demo — or press ?">
+              <span>▶</span> Guided demo
+            </button>
             <button type="button" className="header-action upload-action" onClick={() => fileInputRef.current?.click()}><span>＋</span> Import audio</button>
             <button type="button" className={`header-action record-action ${isRecording ? "recording" : ""}`} onClick={isRecording ? stopCapture : startCapture}><span>{isRecording ? "■" : "●"}</span>{isRecording ? " Stop capture" : " Mic capture"}</button>
             <button type="button" className="settings-button" onClick={() => setSettingsOpen(true)} aria-label="Open command preferences">⚙</button>
@@ -1663,6 +1778,13 @@ function App() {
       <input ref={fileInputRef} type="file" accept="audio/*,.wav,.mp3,.ogg,.m4a,.webm,.flac,.aif,.aiff" onChange={handleUpload} hidden />
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} piiMode={piiMode} onTogglePii={() => setPiiMode((value) => !value)} reducedMotion={reducedMotion} onToggleMotion={() => setReducedMotion((value) => !value)} autoFollow={autoFollow} onToggleFollow={() => setAutoFollow((value) => !value)} />
       <ConfirmModal action={confirmAction} onClose={() => setConfirmAction(null)} onConfirm={confirmActionHandler} />
+      <GuidedTour
+        step={tourStep}
+        onNext={() => setTourStep((current) => Math.min(TOUR_STEPS.length - 1, (current ?? 0) + 1))}
+        onPrev={() => setTourStep((current) => Math.max(0, (current ?? 0) - 1))}
+        onClose={() => setTourStep(null)}
+        onPlay={() => { if (!audioState.isPlaying) togglePlayback(); }}
+      />
       {toast && <div className={`toast ${toast.tone}`} role="status"><span>{toast.tone === "error" ? "!" : toast.tone === "warning" ? "!" : "✓"}</span>{toast.message}</div>}
     </div>
   );
