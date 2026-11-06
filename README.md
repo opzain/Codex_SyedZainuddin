@@ -162,7 +162,10 @@ streamlit run app.py
 
 ```bash
 pnpm run test:smoke   # 62 DOM/interaction assertions (jsdom + Vite SSR build)
+pnpm run test:play    # 9 real-browser playback assertions (Edge/Chrome via playwright-core)
 ```
+
+`test:play` guards the playback path end-to-end in a real browser: it clicks play, waits for the clock to advance, confirms the waveform keeps painting, and fails on any `pageerror` — covering the regression where reading `event.currentTarget` inside a React state updater blanked the console mid-demo. Set `BROWSER_PATH` if Edge/Chrome is not in a standard location; the script skips cleanly when no browser is found.
 
 ### Deploy to Render
 

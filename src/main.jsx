@@ -1163,6 +1163,41 @@ function GuidedTour({ step, onNext, onPrev, onClose, onPlay }) {
   );
 }
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("CyberSER UI fault", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="crash-screen">
+          <div className="crash-card">
+            <p className="eyebrow">RECOVERABLE UI FAULT</p>
+            <h1>The console hit an unexpected error.</h1>
+            <p className="crash-message">{String(this.state.error?.message || this.state.error)}</p>
+            <p className="crash-note">Your demo audio and queue are untouched. Reload to return to the command center.</p>
+            <div className="crash-actions">
+              <button type="button" className="primary-button" onClick={() => window.location.reload()}>Reload console</button>
+              <button type="button" className="ghost-button" onClick={() => this.setState({ error: null })}>Try to continue</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   const [calls, setCalls] = useState(FALLBACK_CALLS);
   const [selectedId, setSelectedId] = useState(FALLBACK_CALLS[0].id);
@@ -1727,7 +1762,13 @@ function App() {
         preload="auto"
         onLoadedMetadata={handleLoadedMetadata}
         onCanPlay={() => setAudioState((state) => ({ ...state, loading: false, error: "" }))}
-        onTimeUpdate={(event) => setAudioState((state) => ({ ...state, currentTime: event.currentTarget.currentTime }))}
+        onTimeUpdate={(event) => {
+          // Read the value before React runs the state updater: the synthetic
+          // event's currentTarget is nulled once the handler returns, which
+          // used to throw during playback and blank the whole console.
+          const time = event.currentTarget.currentTime;
+          setAudioState((state) => ({ ...state, currentTime: time }));
+        }}
         onPlay={() => setAudioState((state) => ({ ...state, isPlaying: true, loading: false, error: "" }))}
         onPause={() => setAudioState((state) => ({ ...state, isPlaying: false }))}
         onEnded={() => { setAudioState((state) => ({ ...state, isPlaying: false, currentTime: state.duration })); logEvent(`Playback completed for CASE-${selectedIdRef.current}.`, "teal"); }}
@@ -1790,4 +1831,11 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
+createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>,
+);
+
