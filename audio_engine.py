@@ -66,15 +66,33 @@ class AcousticFeatureExtractor:
         if len(audio_signal) < self.frame_length_samples:
             return self._empty_features() | {'duration_sec': float(len(audio_signal) / sr)}
 
-        # Fundamental frequency (F0) using pyin
-        f0, voiced_flag, _ = librosa.pyin(
-            y=audio_signal,
-            sr=sr,
-            fmin=50,
-            fmax=1000,
-            frame_length=self.frame_length_samples,
-            hop_length=self.hop_length_samples,
-        )
+        # Fundamental frequency (F0).
+        # librosa >= 1.0 rejects pyin when frame_length is large relative to the
+        # pitch search range, so pitch uses its own analysis window (128 ms at
+        # 16 kHz) while the energy/spectral features keep the 500 ms frame.
+        pitch_frame_length = min(self.frame_length_samples, 2048)
+        pitch_hop_length = min(self.hop_length_samples, 512)
+        try:
+            f0, voiced_flag, _ = librosa.pyin(
+                y=audio_signal,
+                sr=sr,
+                fmin=50,
+                fmax=1000,
+                frame_length=pitch_frame_length,
+                hop_length=pitch_hop_length,
+            )
+        except Exception:
+            # Older/newer librosa releases disagree on pyin internals; yin is a
+            # robust fallback that needs no transition matrix.
+            f0 = librosa.yin(
+                y=audio_signal,
+                sr=sr,
+                fmin=50,
+                fmax=1000,
+                frame_length=pitch_frame_length,
+                hop_length=pitch_hop_length,
+            )
+            voiced_flag = np.isfinite(f0)
         # Remove unvoiced frames
         f0 = np.where(voiced_flag, f0, np.nan)
         f0_mean = self._safe_mean(f0[~np.isnan(f0)])
@@ -130,7 +148,8 @@ class AcousticFeatureExtractor:
         f0_std_ratio = f0_std / f0_mean if f0_mean > 0 else 0.0
 
         # Speech rate (onsets per second)
-        onset_times = librosa.onset_detect(
+        onset_detect = getattr(librosa, "onset_detect", None) or librosa.onset.onset_detect
+        onset_times = onset_detect(
             y=audio_signal,
             sr=sr,
             hop_length=self.hop_length_samples,
